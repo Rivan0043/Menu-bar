@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Cafe & Eatery - Digital Menu</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              gold: '#D4AF37',
+              goldHover: '#B59227',
+              darkBg: '#121212',
+              cardBg: '#1E1E1E',
+              accentBg: '#2A2A2A',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Menghubungkan ke berkas Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-brand-darkBg text-gray-100 font-sans min-h-screen pb-24">
+
+  <!-- Header & Cafe Info -->
+  <header class="relative bg-gradient-to-b from-black/80 to-brand-darkBg pt-6 pb-4 px-4 sticky top-0 z-20 backdrop-blur-md bg-opacity-90 border-b border-white/5">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex justify-between items-center mb-3">
+        <div>
+          <span class="text-xs uppercase tracking-widest text-brand-gold font-semibold">Selamat Datang Di</span>
+          <h1 class="text-2xl md:text-3xl font-serif font-bold text-white tracking-wide">Aura Cafe & Eatery</h1>
+        </div>
+        <!-- Table Indicator Badge -->
+        <div class="bg-brand-accentBg border border-brand-gold/30 px-3 py-1.5 rounded-full flex items-center space-x-2 text-xs text-gray-300">
+          <i class="fa-solid fa-chair text-brand-gold"></i>
+          <span>Meja: <strong id="tableNumberDisplay" class="text-white">05</strong></span>
+          <button onclick="changeTableNumber()" class="text-gray-400 hover:text-brand-gold ml-1 focus:outline-none" title="Ubah Nomor Meja">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="relative mt-3">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Cari kopi, makanan, atau penutup..." 
+          class="w-full bg-brand-cardBg text-sm text-gray-100 pl-10 pr-4 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-brand-gold transition"
+          oninput="handleSearch()"
+        >
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-3xl mx-auto px-4 mt-4">
+    <!-- Category Tabs Filter -->
+    <div class="flex items-center space-x-2 overflow-x-auto hide-scrollbar py-2 mb-6" id="categoryTabs"></div>
+
+    <!-- Menu List Grid -->
+    <div id="menuContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+    <!-- Empty Search State -->
+    <div id="emptyState" class="hidden text-center py-12">
+      <i class="fa-solid fa-utensils text-4xl text-gray-600 mb-3"></i>
+      <p class="text-gray-400 text-sm">Menu yang Anda cari tidak ditemukan.</p>
+    </div>
+  </main>
+
+  <!-- Sticky Bottom Cart Bar -->
+  <div id="cartBar" class="fixed bottom-0 inset-x-0 bg-brand-cardBg/95 backdrop-blur-lg border-t border-white/10 px-4 py-3 z-30 transition-transform duration-300 translate-y-full">
+    <div class="max-w-3xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="relative">
+          <div class="w-10 h-10 rounded-full bg-brand-gold/20 text-brand-gold flex items-center justify-center">
+            <i class="fa-solid fa-basket-shopping text-lg"></i>
+          </div>
+          <span id="cartCountBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Total Est. (Termasuk Pajak)</p>
+          <p id="cartTotalPrice" class="text-base font-bold text-brand-gold">Rp 0</p>
+        </div>
+      </div>
+      <button 
+        onclick="toggleCartModal(true)" 
+        class="bg-brand-gold hover:bg-brand-goldHover text-black font-semibold text-sm px-5 py-2.5 rounded-xl transition flex items-center space-x-2 shadow-lg shadow-brand-gold/10"
+      >
+        <span>Lihat Pesanan</span>
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Cart Modal Drawer -->
+  <div id="cartModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="absolute bottom-0 inset-x-0 bg-brand-cardBg rounded-t-3xl max-w-3xl mx-auto max-h-[85vh] flex flex-col transform translate-y-full transition-transform duration-300" id="cartModalContent">
+      
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-white/10 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-receipt text-brand-gold"></i>
+          <h2 class="text-lg font-bold text-white">Rincian Pesanan</h2>
+        </div>
+        <button onclick="toggleCartModal(false)" class="text-gray-400 hover:text-white p-2">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Cart Items) -->
+      <div class="p-4 overflow-y-auto flex-1 space-y-3" id="cartItemsContainer"></div>
+
+      <!-- Order Notes & Footer -->
+      <div class="p-4 border-t border-white/10 bg-brand-accentBg/50 space-y-3">
+        <div>
+          <label for="orderNotes" class="block text-xs text-gray-400 mb-1">Catatan Tambahan (Opsional):</label>
+          <input 
+            type="text" 
+            id="orderNotes" 
+            placeholder="Contoh: Es sedikit, tidak pedas, dll." 
+            class="w-full bg-brand-darkBg text-xs text-gray-200 px-3 py-2 rounded-lg border border-white/10 focus:outline-none focus:border-brand-gold"
+          >
+        </div>
+
+        <!-- Price Calculation Summary -->
+        <div class="space-y-1 text-xs text-gray-300 pt-2 border-t border-white/5">
+          <div class="flex justify-between">
+            <span>Subtotal</span>
+            <span id="summarySubtotal">Rp 0</span>
+          </div>
+          <div class="flex justify-between text-gray-400">
+            <span>Pajak (10%)</span>
+            <span id="summaryTax">Rp 0</span>
+          </div>
+          <div class="flex justify-between text-sm font-bold text-white pt-1">
+            <span>Total Akhir</span>
+            <span id="summaryTotal" class="text-brand-gold">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- Order Button -->
+        <button 
+          onclick="sendOrderToWhatsApp()" 
+          class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-emerald-600/20"
+        >
+          <i class="fa-brands fa-whatsapp text-lg"></i>
+          <span>Kirim Pesanan ke Pelayan</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Menghubungkan ke berkas JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
